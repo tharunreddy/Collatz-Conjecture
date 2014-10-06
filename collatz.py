@@ -10,7 +10,7 @@ import sys
 # collatz_read
 # ------------
 
-def collatz_read (r, a) :
+def collatz_read (r) :
     """
     reads two ints into a[0] and a[1]
     r is a  reader
