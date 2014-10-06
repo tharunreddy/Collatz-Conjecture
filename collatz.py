@@ -17,16 +17,8 @@ def collatz_read (r, a) :
     a is an array of int
     return true if that succeeds, false otherwise
     """
-    s = r.readline()
-    if s == "" :
-        return False
-    l = s.split()
-    a[0] = int(l[0])
-    a[1] = int(l[1])
-    assert a[0] > 0
-    assert a[1] > 0
-    return True
-
+    for line in r:
+    	yield line.split()
 
 # lazy cache 
 
@@ -80,23 +72,14 @@ def collatz_eval (i, j) :
     assert j > 0
     # If i > j, then swap the inputs.
     if i > j:
-        c = i
- 	i = j
-	j = c
+        c, j = j, c
     
     if j/2 > i:
 	i = j/2 # Implementing the trick from Quiz 1 : max(i, j) = max(j/2, j) if j/2 > 1
     
-    if (i%500 == 0):
-	loc_i = i/500  ## loc_i is the index of the sub-interval to which i belongs
-    else:
-	loc_i = i/500 + 1
-
-    if (j%500 == 0):
-	loc_j = j/500  ## loc_j is the index of the sub-interval to which j belongs
-    else:
-	loc_j = j/500 + 1
-
+    loc_i = i/500 + int(i%500 == 0)
+    loc_j = j/500 + int(j%500 == 0)
+    
     assert loc_j >= loc_i
 
     if loc_i == loc_j:
@@ -104,13 +87,8 @@ def collatz_eval (i, j) :
     else:
         left_max = max(cyc_len(k) for k in range(i, (loc_i*500) + 1)) # Get max cycle length for the leftmost incomplete sub interval
 	right_max = max(cyc_len(k) for k in range((loc_j - 1)*500 + 1, j+1)) # Get max cycle length for the rightmost incomplete sub interval
-	max_set = []
-	max_set.append(left_max)
-	max_set.append(right_max)
-
-	for ptr in range(loc_i+1, loc_j):
-	    max_set.append(m_cache[ptr]) # Collect the max cycle lengths of the sub intervals in between
-
+	max_set = [left_max, right_max]
+	max_set += [m_cache[ptr] for ptr in range(loc_i+1, loc_j)]
 	v = max(max_set)	
 
     assert v > 0
@@ -141,15 +119,13 @@ def collatz_solve (r, w) :
     r is a reader
     w is a writer
     """
-    a = [0, 0]
-    while collatz_read(r, a) :
-        v = collatz_eval(a[0], a[1])
-        collatz_print(w, a[0], a[1], v)
-
+    for inp in collatz_read(r):
+    	v = collatz_eval(*inp)
+    	collatz_print(w, *inp, v)
+    	
 # ----
 # main
 # ----
-
 
 collatz_solve(sys.stdin, sys.stdout)
 
